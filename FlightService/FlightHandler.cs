@@ -136,8 +136,9 @@ public class FlightHandler
             Amount = flights.Amount
         });
         flights.Amount-=requestBody.PassangerCount.Value;
-        await _readDb.SaveChangesAsync(Token);
         await transaction.CommitAsync(Token);
+        await _readDb.SaveChangesAsync(Token);
+        
         _logger.Debug("Creating response");
         message.MessageId += 1;
         message.MessageType = MessageType.PaymentRequest;
@@ -168,8 +169,9 @@ public class FlightHandler
             await booked.ExecuteDeleteAsync(Token);
             
         }
-        await _readDb.SaveChangesAsync(Token);
         await transaction.CommitAsync(Token);
+        await _readDb.SaveChangesAsync(Token);
+        
         
         _logger.Debug("creating response");
         message.MessageType = MessageType.OrderReply;
@@ -191,9 +193,13 @@ public class FlightHandler
         await _dbReadLock.WaitAsync(Token);
         await using var transaction = await _readDb.Database.BeginTransactionAsync(Token);
 
+        _logger.Debug("Transaction started");
+        
         var booked = _readDb.Bookings
             .Where(p => p.TransactionId == message.TransactionId);
 
+        _logger.Debug("Found those flights booked {b}", JsonConvert.SerializeObject(booked));
+        
         if (booked.Any())
         {
             _logger.Debug(" booked present");
