@@ -105,7 +105,7 @@ public class FlightHandler
                                       && p.Amount - requestBody.PassangerCount >= 0
                                       && p.FlightTime.Date == requestBody.BookFrom.Value.Date);
         
-        _logger.Debug("After query");
+        _logger.Debug("After query {s}", JsonConvert.SerializeObject(flights));
         
         if (flights == null)
         {
@@ -137,7 +137,7 @@ public class FlightHandler
         });
         flights.Amount-=requestBody.PassangerCount.Value;
         await transaction.CommitAsync(Token);
-        await _readDb.SaveChangesAsync(Token);
+        await _writeDb.SaveChangesAsync(Token);
         
         _logger.Debug("Creating response");
         message.MessageId += 1;
@@ -195,33 +195,29 @@ public class FlightHandler
 
         _logger.Debug("Transaction started");
         
-        var booked = _readDb.Bookings
-            .Where(p => p.TransactionId == message.TransactionId);
+        var booking = await _readDb.Bookings
+            .FirstOrDefaultAsync(p => p.TransactionId == message.TransactionId);
 
-        _logger.Debug("Found those flights booked {b}", JsonConvert.SerializeObject(booked));
-        
-        if (booked.Any())
+        _logger.Debug("Found those flights booked {b}", JsonConvert.SerializeObject(booking));
+
+        if (booking != null)
         {
             _logger.Debug(" booked present");
-            var booking = booked.FirstOrDefault();
-            if (booking != null)
-            {
-                booking.Temporary = 0;
-                await _readDb.SaveChangesAsync(Token);
-                await transaction.CommitAsync(Token);
+            booking.Temporary = 0;
+            await _readDb.SaveChangesAsync(Token);
+            await transaction.CommitAsync(Token);
                 
-                _logger.Debug("rsponse creating");
-                message.MessageType = MessageType.OrderReply;
-                message.MessageId += 1;
-                message.State = SagaState.FlightFullAccept;
-                message.Body = new FlightReply();
-                message.CreationDate = DateTime.Now;
+            _logger.Debug("rsponse creating");
+            message.MessageType = MessageType.OrderReply;
+            message.MessageId += 1;
+            message.State = SagaState.FlightFullAccept;
+            message.Body = new FlightReply();
+            message.CreationDate = DateTime.Now;
         
-                _logger.Debug("to publish");
-                await Publish.Writer.WriteAsync(message, Token);
-                _dbReadLock.Release();
-                _concurencySemaphore.Release();
-            }
+            _logger.Debug("to publish");
+            await Publish.Writer.WriteAsync(message, Token);
+            _dbReadLock.Release();
+            _concurencySemaphore.Release();
         }
         _logger.Debug("rollback");
         await transaction.RollbackAsync(Token);
