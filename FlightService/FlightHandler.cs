@@ -79,7 +79,7 @@ public class FlightHandler
             {
                 SagaState.Begin => Task.Run(() => TempBookFlight(message), Token),
                 SagaState.PaymentAccept => Task.Run(() => BookFlight(message), Token),
-                SagaState.FlightTimedRollback => Task.Run(() => TempRollback(message), Token),
+                SagaState.FlightTimedRollback or SagaState.PaymentFailed => Task.Run(() => TempRollback(message), Token),
                 _ => null
             };
         }

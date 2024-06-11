@@ -9,6 +9,7 @@ using vgt_saga_flight;
 using vgt_saga_flight.FlightService;
 using vgt_saga_flight.Models;
 using ILogger = NLog.ILogger;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,7 @@ try
     };
     options.Configure(builder.Configuration.GetSection("NLog"));
     builder.Logging.AddNLog(options);
+    builder.Logging.AddFilter((p, x) => p == "Microsoft.EntityFrameworkCore" && x == LogLevel.Critical);
 }
 catch (InvalidDataException e)
 {
@@ -106,7 +108,7 @@ app.MapPost("/flights", ([FromBody]FlightsRequestHttp request) =>
     {
         using var scope = app.Services.CreateAsyncScope();
         using var db = scope.ServiceProvider.GetService<FlightDbContext>();
-
+        
         logger.Info("fligths request date {v}, departure {d} and arrival {a}" ,
             request.DepartureDateDt(), request.DepartureAirportCodes, request.ArrivalAirportCodes);
         
