@@ -71,7 +71,7 @@ public class FlightHandler
         {
             var message = await Requests.Reader.ReadAsync(Token);
 
-            _logger.Debug("Handling message {id} {type} {state}", message.MessageId, message.MessageType, message.State);
+            _logger.Debug("HandleFlights Handling message {id} {type} {state}", message.MessageId, message.MessageType, message.State.ToString());
             
             await _concurencySemaphore.WaitAsync(Token);
 
