@@ -160,14 +160,15 @@ public class FlightHandler
         await using var transaction = await _readDb.Database.BeginTransactionAsync(Token);
 
         var booked = _readDb.Bookings
-            .Where(p => p.TransactionId == message.TransactionId);
+            .Where(p => p.TransactionId == message.TransactionId).Include(p => p.Flight);
 
         if (booked.Any())
         {
             _logger.Debug("removing booked");
-            booked.First().Flight.Amount+=booked.First().Amount;
+            var flight = booked.First().Flight;
+            flight.Amount += booked.First().Amount;
+            _readDb.Flights.Attach(flight);
             await booked.ExecuteDeleteAsync(Token);
-            
         }
         await transaction.CommitAsync(Token);
         await _readDb.SaveChangesAsync(Token);
@@ -176,8 +177,8 @@ public class FlightHandler
         _logger.Debug("creating response");
         message.MessageType = MessageType.OrderReply;
         message.MessageId += 1;
-        message.State = SagaState.FlightTimedRollback;
-        message.Body = new FlightReply();
+        message.State = SagaState.FlightFullRollback;
+        message.Body = new OrderReply();
         message.CreationDate = DateTime.Now;
         
         _logger.Debug("to publisher");
