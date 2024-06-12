@@ -162,6 +162,7 @@ public class FlightHandler
         var booked = _readDb.Bookings
             .Where(p => p.TransactionId == message.TransactionId).Include(p => p.Flight);
 
+        _logger.Info("BOOOOOOKEEED {b}", booked);
         if (booked.Any())
         {
             _logger.Debug("removing booked");
