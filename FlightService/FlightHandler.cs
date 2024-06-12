@@ -178,7 +178,7 @@ public class FlightHandler
         _logger.Debug("creating response");
         message.MessageType = MessageType.OrderReply;
         message.MessageId += 1;
-        message.State = SagaState.FlightFullRollback;
+        message.State = SagaState.FlightTimedRollback;
         message.Body = new OrderReply();
         message.CreationDate = DateTime.Now;
         
