@@ -116,9 +116,10 @@ app.MapPost("/flights", ([FromBody]FlightsRequestHttp request) =>
             where request.ArrivalAirportCodes.Contains(flights.ArrivalAirport.AirportCode)
                   && request.DepartureAirportCodes.Contains(flights.DepartureAirport.AirportCode)
                   && flights.FlightTime.Date == request.DepartureDateDt()
-                  && (from m in db.Bookings
-                      where m.Flight == flights
-                      select m.Amount).Sum() + request.NumberOfPassengers < flights.Amount
+                  && flights.Amount - request.NumberOfPassengers > 0
+                  // && (from m in db.Bookings
+                  //     where m.Flight == flights
+                  //     select m.Amount).Sum() + request.NumberOfPassengers < flights.Amount
             select flights;
 
         var results = dbFlights.Include(p => p.DepartureAirport).Include(p => p.ArrivalAirport).ToList();
@@ -150,7 +151,7 @@ app.MapPost("/flight", ([FromBody]FlightRequestHttp request) =>
         
         var dbFlights = from flights in db.Flights
             where request.FlightId.Equals(flights.FlightDbId.ToString())
-                  && request.NumberOfPassengers <= flights.Amount
+                  //&& request.NumberOfPassengers <= flights.Amount
             select flights;
 
         var flight = dbFlights.Include(p => p.DepartureAirport).Include(p => p.ArrivalAirport).FirstOrDefault();
