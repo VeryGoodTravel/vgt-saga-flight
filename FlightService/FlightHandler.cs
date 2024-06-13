@@ -133,7 +133,7 @@ public class FlightHandler
             TransactionId = message.TransactionId,
             Temporary = 1,
             TemporaryDt = DateTime.Now,
-            Amount = flights.Amount
+            Amount = requestBody.PassangerCount.Value
         });
         flights.Amount-=requestBody.PassangerCount.Value;
         await transaction.CommitAsync(Token);
