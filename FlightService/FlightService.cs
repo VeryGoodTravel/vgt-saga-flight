@@ -120,6 +120,23 @@ public class FlightService : IDisposable
                     Price = rnd.Next(80, 250)
                 });
             }
+            // presentation flights
+            _writeDb.Add(new FlightDb
+            {
+                Amount = rnd.Next(5, 25),
+                FlightTime = DateTime.Now,
+                ArrivalAirport = arrivalDbAirports[rnd.Next(0, arrivalDbAirports.Count - 1)],
+                DepartureAirport = airport,
+                Price = rnd.Next(80, 250)
+            });
+            _writeDb.Add(new FlightDb
+            {
+                Amount = rnd.Next(5, 25),
+                FlightTime = DateTime.Now + TimeSpan.FromDays(3),
+                ArrivalAirport = arrivalDbAirports[rnd.Next(0, arrivalDbAirports.Count - 1)],
+                DepartureAirport = airport,
+                Price = rnd.Next(80, 250)
+            });
         }
         foreach (var airport in arrivalDbAirports)
         {
@@ -134,6 +151,23 @@ public class FlightService : IDisposable
                     Price = rnd.Next(80, 250)
                 });
             }
+            // presentation flights
+            _writeDb.Add(new FlightDb
+            {
+                Amount = rnd.Next(5, 25),
+                FlightTime = DateTime.Now,
+                ArrivalAirport = departureDbAirports[rnd.Next(0, departureDbAirports.Count - 1)],
+                DepartureAirport = airport,
+                Price = rnd.Next(80, 250)
+            });
+            _writeDb.Add(new FlightDb
+            {
+                Amount = rnd.Next(5, 25),
+                FlightTime = DateTime.Now + TimeSpan.FromDays(3),
+                ArrivalAirport = departureDbAirports[rnd.Next(0, departureDbAirports.Count - 1)],
+                DepartureAirport = airport,
+                Price = rnd.Next(80, 250)
+            });
         }
         await _writeDb.SaveChangesAsync(Token);
     }
